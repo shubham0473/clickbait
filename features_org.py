@@ -8,7 +8,7 @@ def get_no_of_tokens(line):
     return len(tokens)
 
 def get_avg_char_count(line):
-    tokens = tokens = nltk.word_tokenize(line)
+    tokens = nltk.word_tokenize(line)
     sum = 0
     for token in tokens:
         sum = sum + len(token)
