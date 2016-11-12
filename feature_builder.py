@@ -1,13 +1,11 @@
 import nltk
 import json
-import nltk
-
 
 def main():
     headlines = load_headlines()
     result = []
     for line in headlines:
-        result.append({line: {'noOfTokens' : get_no_of_tokens(line), 'avgCharCount' : get_avg_char_count(line)}})
+        result.append({line: {'noOfTokens' : get_no_of_tokens(line), 'avgCharCount' : get_avg_char_count(line),'noOfStopwords' : get_no_of_stopwords(line)}})
     with open('sent_len_feature.json', 'w+') as outfile:
         json.dump(result, outfile, indent=4)
 
@@ -27,6 +25,11 @@ def get_avg_char_count(line):
 def load_headlines():
     datafile = open('clickBaitData.json', 'r')
     return [json.loads(line)['title'] for line in datafile]
+
+def get_no_of_stopwords(line):
+    stop = nltk.corpus.stopwords.words('english')
+    return len([i for i in line.lower().split() if i in stop])
+
 
 if __name__ == '__main__':
     main()
