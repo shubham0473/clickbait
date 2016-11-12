@@ -1,3 +1,4 @@
 Features extracted (for both cb and non_cb): 
   1. get_no_of_tokens() : Number of words in the headline
   2. get_avg_char_count() : Average number of characters in words (of headline)
+  3. sd_len(): Length of syntactic dependencies between governing and dependent words (in each headline)
