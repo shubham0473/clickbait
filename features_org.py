@@ -7,16 +7,17 @@ from nltk.parse.stanford import StanfordNeuralDependencyParser
 from nltk.tag.stanford import StanfordPOSTagger, StanfordNERTagger
 from nltk.tokenize.stanford import StanfordTokenizer
 
-parser=StanfordParser(model_path="edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz")
+from collections import Counter
+import itertools
 
 # Feature extraction
 
-    # Feature 1: Number of tokens
+    # Feature 1.1: Number of tokens
 def get_no_of_tokens(line):
     tokens = nltk.word_tokenize(line)
     return len(tokens)
 
-    #Feature 2: Average character count
+    #Feature 1.2: Average character count
 def get_avg_char_count(line):
     tokens = nltk.word_tokenize(line)
     sum = 0
@@ -24,9 +25,8 @@ def get_avg_char_count(line):
         sum = sum + len(token)
     return sum/(1.0*len(tokens))
 
-    #Feature 3: Length of Syntactic Dependencies
+    #Feature 1.3: Length of Syntactic Dependencies
 def sd_len(line):
-
     tokens = nltk.word_tokenize(line)
     dp = StanfordDependencyParser()
     syndep = dp.raw_parse(line)
@@ -48,12 +48,23 @@ def sd_len(line):
             dep_size[abs(gov - dep)] += 1
     return dep_size
 
+    # Feature 3.1: Find the most common subjects in headlines
+def sub_count(line):
+    tokens = nltk.word_tokenize(line)
+    dp = StanfordDependencyParser()
+    syndep = dp.raw_parse(line)
+    dep = syndep.next()
+    sub = "u\'nsubj\'"
+    sub_list = []
+    for i in list(dep.triples()):
+        if sub in str(i):
+            for token in tokens:
+                if(", (u\'" + token +"\', u\'") in str(i):
+                    sub_list.append(token)
+                    continue
+    return sub_list
 
-def main():
-    main_cb()
-    main_ncb()
-
-## FEATURE EXTRACTION CLICKBAIT
+## CLICKBAIT DUMP to JSON
 
 def load_cb():
     datafile = open('clickBaitData.json', 'r')
@@ -68,13 +79,14 @@ def main_cb():
             'title' : line, 
             'noOfTokens' : get_no_of_tokens(line), 
             'avgCharCount' : get_avg_char_count(line),
-            'syntacticDependencyArray' : sd_len(line).tolist()
+            'syntacticDependencyArray' : sd_len(line).tolist(),
+            'subjectList' : sub_count(line)
             }})
         i = i+1
     with open('cb_features.json', 'w+') as outfile:
         json.dump(result, outfile, indent=4)
 
-## FEATURE EXTRACTION NON CLICKBAIT
+## NON CLICKBAIT DUMP to JSON
 
 def load_ncb():
     datafile = open('nonClickBaitData.json', 'r')
@@ -89,10 +101,44 @@ def main_ncb():
             'title' : line, 
             'noOfTokens' : get_no_of_tokens(line), 
             'avgCharCount' : get_avg_char_count(line),
-            'syntacticDependencyArray' : sd_len(line).tolist()
+            'syntacticDependencyArray' : sd_len(line).tolist(),
+            'subjectList' : sub_count(line)        
             }})
     with open('noncb_features.json', 'w+') as outfile:
         json.dump(result, outfile, indent=4)
+
+## Common features
+def main_common():
+    # Clickbait
+    headlines = load_cb()
+    result_cb = []
+    for line in headlines:
+        result_cb.append(sub_count(line))
+    flattened_cb = list(itertools.chain.from_iterable(result_cb))
+    rcb = Counter(flattened_cb)
+
+    # Non clickbait
+    headlines = load_ncb()
+    result_ncb = []
+    for line in headlines:
+        result_ncb.append(sub_count(line))  
+    flattened_ncb = list(itertools.chain.from_iterable(result_ncb))
+    rncb = Counter(flattened_ncb)
+
+    # Add all to results
+    result = []
+    result.append({
+        'clickBait' : [key for key,value in rcb.most_common(40)],
+        'nonClickBait' : [key for key,value in rncb.most_common(40)]
+        })
+    with open('common_features.json', 'w+') as outfile:
+        json.dump(result, outfile, indent=4)
+
+## Call ClickBait and Non Clickbait functions
+def main():
+    main_cb()   
+    main_ncb()
+    main_common()
 
 ## MAIN
 
