@@ -31,7 +31,7 @@ def sd_len(line):
     dp = StanfordDependencyParser()
     syndep = dp.raw_parse(line)
     dep = syndep.next()
-    dep_size = numpy.zeros(40)
+    dep_size = numpy.zeros(19)
     for i in list(dep.triples()):
         gov = 0
         dep = 0
@@ -64,11 +64,11 @@ def main_cb():
     result = []
     i=0
     for line in headlines:
-        result.append({line: {
-            'id' : i, 
+        result.append({i: {
+            'title' : line, 
             'noOfTokens' : get_no_of_tokens(line), 
             'avgCharCount' : get_avg_char_count(line),
-            'syntacticDependencyArray' : sd_len(line)
+            'syntacticDependencyArray' : sd_len(line).tolist()
             }})
         i = i+1
     with open('cb_features.json', 'w+') as outfile:
@@ -85,10 +85,11 @@ def main_ncb():
     result = []
     i = 0
     for line in headlines:
-        result.append({line: {
-            'id' : i, 'noOfTokens' : get_no_of_tokens(line), 
+        result.append({i: {
+            'title' : line, 
+            'noOfTokens' : get_no_of_tokens(line), 
             'avgCharCount' : get_avg_char_count(line),
-            'syntacticDependencyArray' : sd_len(line)
+            'syntacticDependencyArray' : sd_len(line).tolist()
             }})
     with open('noncb_features.json', 'w+') as outfile:
         json.dump(result, outfile, indent=4)
@@ -98,6 +99,9 @@ def main_ncb():
 if __name__ == '__main__':
     main()
 
+# Faltu Functions
 
-
-## FALTU FUNCTION
+def set_default(obj):
+    if isinstance(obj, set):
+        return list(obj)
+    raise TypeError
