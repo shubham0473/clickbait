@@ -1,15 +1,18 @@
 import nltk
 import json
 
+# list from https://en.wiktionary.org/wiki/Appendix:English_internet_slang
+with open('slangs.json','r') as inp:
+    slangs = json.load(inp)['slangs']
+
 def main():
     headlines = load_headlines()
     result = []
     for line in headlines:
-        result.append({line: {'noOfTokens' : get_no_of_tokens(line), 'avgCharCount' : get_avg_char_count(line),'noOfStopwords' : get_no_of_stopwords(line)}})
+        result.append({line: {'noOfTokens' : get_no_of_tokens(line), 'avgCharCount' : get_avg_char_count(line),'noOfStopwords' : get_no_of_stopwords(line),'noOfSlangs' : get_no_of_slangs(line)}})
+        print(get_pos_maxent(line))
     with open('sent_len_feature.json', 'w+') as outfile:
         json.dump(result, outfile, indent=4)
-
-    # print data
 
 def get_no_of_tokens(line):
     tokens = nltk.word_tokenize(line)
@@ -30,6 +33,15 @@ def get_no_of_stopwords(line):
     stop = nltk.corpus.stopwords.words('english')
     return len([i for i in line.lower().split() if i in stop])
 
+def get_no_of_slangs(line):
+    return len([i for i in line.split() if i in slangs])
+
+def get_pos_maxent(line):
+    tokens = nltk.word_tokenize(line)
+    return nltk.pos_tag(tokens)
+
 
 if __name__ == '__main__':
     main()
+
+
