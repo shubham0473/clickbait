@@ -46,7 +46,7 @@ def sd_len(line):
             it += 1
         if((gov - dep) != 0):
             dep_size[abs(gov - dep)] += 1
-    return dep_size
+    return numpy.argmax(dep_size)
 
     # Feature 3.1: Find the most common subjects in headlines
 def sub_count(line):
@@ -79,7 +79,7 @@ def main_cb():
             'title' : line, 
             'noOfTokens' : get_no_of_tokens(line), 
             'avgCharCount' : get_avg_char_count(line),
-            'syntacticDependencyArray' : sd_len(line).tolist(),
+            'maxSyntacticLength' : sd_len(line),
             'subjectList' : sub_count(line)
             }})
         i = i+1
@@ -101,9 +101,10 @@ def main_ncb():
             'title' : line, 
             'noOfTokens' : get_no_of_tokens(line), 
             'avgCharCount' : get_avg_char_count(line),
-            'syntacticDependencyArray' : sd_len(line).tolist(),
+            'maxSyntacticLength' : sd_len(line),
             'subjectList' : sub_count(line)        
             }})
+        i = i+1
     with open('noncb_features.json', 'w+') as outfile:
         json.dump(result, outfile, indent=4)
 
